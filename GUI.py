@@ -155,10 +155,10 @@ class Page_2:
         # self.inset_contnet(2, 'JS built-in funcs' , 'getElementById()', 'this is a description')
         # self.inset_contnet(3, 'back-end concepts' , 'middleware()', 'this is a description')
 
-        docs = self.cursor.execute("SELECT * FROM documents").fetchall()
-        conts = self.cursor.execute("SELECT * FROM contents").fetchall()
-        print('docs', docs)
-        print('conts', conts)
+        # docs = self.cursor.execute("SELECT * FROM documents").fetchall()
+        # conts = self.cursor.execute("SELECT * FROM contents").fetchall()
+        # print('docs', docs)
+        # print('conts', conts)
 
         # fill navBar 
         self.fill_navList()
@@ -287,7 +287,7 @@ class Page_2:
         descEntry = Text(self.note_modal, width=34, bd=0)
         descEntry.place(x=155, y=140, height=100) #+35
 
-        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', command=lambda:self.inset_contnet(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
+        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.inset_contnet(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
         submit.place(x=185, y=255, width= 145, height=30)
 
     
@@ -299,14 +299,16 @@ class Page_2:
 
         if self.doc_modal: self.doc_modal.destroy()
 
-        self.doc_modal = Frame(self.contentFrame, width=300, height=70, pady=7, bg='#f2f2fd')
-        self.doc_modal.place(x=185, y=30)
+        self.doc_modal = Frame(self.contentFrame, width=350, height=120, bg='#f2f2fd')
+        self.doc_modal.place(x=185, y=167)
         self.doc_modal.pack_propagate(False)
-        Label(self.doc_modal, text='Choose your document title', font=(font_family, 11, BOLD), pady=5, bg='#f2f2fd', fg='#384850').pack(fill='x')
-        titleEntry = Entry(self.doc_modal, width=35, bd=0, justify=CENTER, textvariable= title)
-        titleEntry.pack(side=LEFT, padx=10, fill='y')
-        submit = Button(self.doc_modal, text='Create', bd=0, font=(font_family, 10, BOLD), padx=5, bg='#384850', fg='#f8f8f8', command=lambda:self.insert_document(title))
-        submit.pack(side=RIGHT, padx=10, fill='y')
+        Label(self.doc_modal, text='Choose document title', font=(font_family, 11, BOLD), pady=5, bg='#384850', fg='#f8f8f8').pack(fill='x')
+        
+        titleEntry = Entry(self.doc_modal, width=40, bd=0, justify=CENTER, textvariable= title)
+        titleEntry.place(x=55, y=50, height=20)
+        
+        submit = Button(self.doc_modal, text='Create', bd=0, font=(font_family, 10, BOLD), padx=5, pady=2, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.insert_document(title))
+        submit.place(x=120, y=85, width=110)
 
     def delete_document(self):
         self.content_old_frame.destroy()
@@ -323,7 +325,7 @@ class Page_2:
             
             Label(self.remove_modal, text='Delete ' + selected_nav_title[0] + ' document?' , font=(font_family, 11, BOLD), pady=5, bg='#384850', fg='#f8f8f8').pack(fill='x')
             Label(self.remove_modal, text='This action also includes removing all the related notes', fg='#384850', bg='#f2f2fd', pady=10).pack(fill=X)
-            submit = Button(self.remove_modal, text='Delete', bd=0, font=(font_family, 10, BOLD), pady=2, bg='#384850', fg='#f8f8f8', command= self.remove_document)
+            submit = Button(self.remove_modal, text='Delete', bd=0, font=(font_family, 10, BOLD), pady=2, bg='#384850', fg='#f8f8f8', cursor='hand2', command= self.remove_document)
             submit.place(x=120, y=85, width=110)
 
 
