@@ -28,7 +28,7 @@ class App:
         self.docImg = PhotoImage(file='Webp.net-resizeimage2.png')
         Label(self.frame, width=182, height=175, bg='#f2f2fd', image=self.docImg).place(x=520, y=195)
         self.workspaceBtn = Button(self.frame, text='Documents', font=(font_family,12, BOLD), fg="#f8f8f8",bg='#384850', width=18, pady=5, bd=0, cursor='hand2', command=self.make_page_2)
-        self.workspaceBtn.place(x=520, y=350) 
+        self.workspaceBtn.place(x=520, y=350)    
   
 
     def main_page(self):
