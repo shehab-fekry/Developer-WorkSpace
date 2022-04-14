@@ -1,8 +1,8 @@
 from tkinter import *
-from tkinter import font
 from tkinter.font import BOLD
 import sqlite3
 import os
+import platform
 
 font_family = ('Sans-Serif Workhorse')
 
@@ -88,7 +88,7 @@ class Page_2:
         empty_img = Label(self.contentFrame, width=150, height=150, bg='#fcfcfc')
         empty_img.image = contentImg  # <== this is were we anchor the img object
         empty_img.configure(image=contentImg)
-        empty_img.place(x=250, y=150)
+        empty_img.place(x=271, y=149) # place(x=271, y=149)
 
         # SideBar frame
         self.sideBarFrame = Frame(self.frame, bg='#f8f8f8', width=200, height=450)
@@ -192,14 +192,19 @@ class Page_2:
             self.toggle_content_frame(selected_nav_content, selected_nav_title)
 
     def toggle_content_frame(self, contents, title):
-        selected_frame = Frame(self.contentFrame, bg='#fcfcfc', width=700, height=450)
-        selected_frame.pack(fill='both')
-        selected_frame.pack_propagate(False)
-        scroll = Scrollbar(selected_frame, orient='vertical').pack(fill='y', side=RIGHT)
+        # selected_frame = Frame(self.contentFrame, width=700, height=450, bg='#fcfcfc')
+        # selected_frame.pack(fill='both')
+        # selected_frame.pack_propagate(False)
+        
+        # scroll = Scrollbar(selected_frame, orient='vertical')
+        # scroll.pack(fill='y', side=RIGHT)
+
+        
+        selected_frame = ScrollFrame(self.contentFrame)
 
 
-        selected_frame_header = Frame(selected_frame, width=620, height=37, bg='#f2f2fd',)
-        selected_frame_header.place(x=30, y=15)
+        selected_frame_header = Frame(selected_frame.viewPort, width=620, height=37, bg='#f2f2fd',)
+        selected_frame_header.pack(pady=10) # place(x=30, y=15)
         selected_frame_header.pack_propagate(False)
 
 
@@ -209,19 +214,19 @@ class Page_2:
         add_note.pack(fill=Y, side=RIGHT)
 
         if contents:
-            y_diminsion = 75
+            # y_diminsion = 75
             self.selected_nav_noteAlert.destroy()
             for content in contents:
                 # Card 
-                card = Frame(selected_frame, width=620, height= 150, bd=0, bg='#fdf5f2')
-                card.place(x=30, y=y_diminsion)
+                card = Frame(selected_frame.viewPort, width=620, height= 150, bd=0, bg='#fdf5f2')
+                card.pack( pady=15) # place(x=30, y=y_diminsion)
                 card.pack_propagate(False)
 
                 # Title area
                 card_title = Label(card, text=content[2], pady=5, bg='#e16259', fg='#f8f8f8', font=(font_family,10, BOLD))
                 card_title.pack(fill=X)
                 close = Button(card_title, text='🗙', font=(font_family,9), bg='#fdf5f2', fg='#e16259', bd=0, cursor='hand2', command= lambda val = content[0]:self.delete_note(val)).pack(side=RIGHT, fill=Y)
-                edit = Button(card_title, text='⌨', font=(font_family,10), bg='#fdf5f2', fg='#e16259', bd=0, cursor='hand2').pack(side=RIGHT, fill=Y, padx=2)
+                edit = Button(card_title, text='⌨', font=(font_family,10), bg='#fdf5f2', fg='#e16259', bd=0, cursor='hand2', command= lambda val = content[0]:self.edit_note(val)).pack(side=RIGHT, fill=Y, padx=2)
                 
                 # Command area
                 command = Label(card, text=content[3], width=82, pady=8, bg='#fcfcfc', fg='#384850', bd=0)
@@ -231,27 +236,25 @@ class Page_2:
                 
                 # Description area
                 Label(card, text=content[4], width=82, pady=5, height=3, bd=0, bg='#fcfcfc').place(x=20, y=80)
-                y_diminsion += 180
+                # y_diminsion += 180
         else:
-            # createNote = Frame(selected_frame, )
-
             contentImg = PhotoImage(file='Webp.net-resizeimage3.png')
-            self.selected_nav_noteAlert = Label(selected_frame, width=150, height=150, bg='#fcfcfc')
+            self.selected_nav_noteAlert = Label(selected_frame.viewPort, width=150, height=150, bg='#fcfcfc')
             self.selected_nav_noteAlert.image = contentImg  # <== this is were we anchor the img object
             self.selected_nav_noteAlert.configure(image=contentImg)
-            self.selected_nav_noteAlert.place(x=250, y=150)
+            self.selected_nav_noteAlert.pack(pady=85) # place(x=250, y=150)
 
         self.content_old_frame = selected_frame
+        
+        selected_frame.pack(side="top", fill="both", expand=True)
+        selected_frame.pack_propagate(False)
 
     def copyToClip(self, copy):
         command = 'echo ' + copy.strip() + '| clip'
         os.system(command)
 
-    def delete_note(self, note_id):
-        with self.conn:
-            self.cursor.execute("DELETE FROM contents WHERE id = ?", [note_id])
-        self.fill_contnet(self.current_nav_id)
-
+    def edit_note(self, note_id):
+        return
 
     def add_content(self):
         title = StringVar()
@@ -287,7 +290,7 @@ class Page_2:
         descEntry = Text(self.note_modal, width=34, bd=0)
         descEntry.place(x=155, y=140, height=100) #+35
 
-        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.inset_contnet(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
+        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.inset_note(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
         submit.place(x=185, y=255, width= 145, height=30)
 
     
@@ -330,12 +333,16 @@ class Page_2:
 
 
     # SQL Query functions
-    def inset_contnet(self, doc_id, title, command, description):
+    def inset_note(self, doc_id, title, command, description):
         with self.conn:
             self.cursor.execute("INSERT INTO contents (doc_id, title, command, description) VALUES(?,?,?,?)", (doc_id, title, command, description))
         self.note_modal.destroy()
         self.fill_contnet(doc_id)
 
+    def delete_note(self, note_id):
+        with self.conn:
+            self.cursor.execute("DELETE FROM contents WHERE id = ?", [note_id])
+        self.fill_contnet(self.current_nav_id)
 
     def insert_document(self, title):
         with self.conn:
@@ -356,6 +363,73 @@ class Page_2:
         self.content_old_frame.destroy()
         self.remove_modal.destroy()
         self.init_navList()
+
+
+
+
+
+class ScrollFrame(Frame):
+    def __init__(self, parent):
+        super().__init__(parent) # create a frame (self)
+
+        self.canvas = Canvas(self, borderwidth=5, background="#fcfcfc")          #place canvas on self
+        self.viewPort = Frame(self.canvas, background="#fcfcfc")                    #place a frame on the canvas, this frame will hold the child widgets 
+        self.vsb = Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
+        self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
+
+        self.vsb.pack(side="right", fill="y")                                       #pack scrollbar to right of self
+        self.canvas.pack(side="left", fill="both", expand=True)                     #pack canvas to left of self and expand to fil
+        self.canvas_window = self.canvas.create_window((4,4), window=self.viewPort, anchor="nw",            #add view port frame to canvas
+                                  tags="self.viewPort")
+
+        self.viewPort.bind("<Configure>", self.onFrameConfigure)                       #bind an event whenever the size of the viewPort frame changes.
+        self.canvas.bind("<Configure>", self.onCanvasConfigure)                       #bind an event whenever the size of the canvas frame changes.
+            
+        self.viewPort.bind('<Enter>', self.onEnter)                                 # bind wheel events when the cursor enters the control
+        self.viewPort.bind('<Leave>', self.onLeave)                                 # unbind wheel events when the cursorl leaves the control
+
+        self.onFrameConfigure(None)                                                 #perform an initial stretch on render, otherwise the scroll region has a tiny border until the first resize
+
+    def onFrameConfigure(self, event):                                              
+        '''Reset the scroll region to encompass the inner frame'''
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))                 #whenever the size of the frame changes, alter the scroll region respectively.
+
+    def onCanvasConfigure(self, event):
+        '''Reset the canvas window to encompass inner frame when required'''
+        canvas_width = event.width
+        self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
+
+    def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
+        if platform.system() == 'Windows':
+            self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
+        elif platform.system() == 'Darwin':
+            self.canvas.yview_scroll(int(-1 * event.delta), "units")
+        else:
+            if event.num == 4:
+                self.canvas.yview_scroll( -1, "units" )
+            elif event.num == 5:
+                self.canvas.yview_scroll( 1, "units" )
+    
+    def onEnter(self, event):                                                       # bind wheel events when the cursor enters the control
+        if platform.system() == 'Linux':
+            self.canvas.bind_all("<Button-4>", self.onMouseWheel)
+            self.canvas.bind_all("<Button-5>", self.onMouseWheel)
+        else:
+            self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
+
+    def onLeave(self, event):                                                       # unbind wheel events when the cursorl leaves the control
+        if platform.system() == 'Linux':
+            self.canvas.unbind_all("<Button-4>")
+            self.canvas.unbind_all("<Button-5>")
+        else:
+            self.canvas.unbind_all("<MouseWheel>")
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     root = Tk()
