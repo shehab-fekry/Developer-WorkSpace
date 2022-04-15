@@ -150,15 +150,10 @@ class Page_2:
         # self.inst('Vanilla JS')
         # self.inst('Laravel')
 
-        # self.inset_contnet(1, 'React Hooks' ,'useEffect()', 'this is a description')
-        # self.inset_contnet(1, 'NPM Package Manager' ,'npm start', 'this is another description')
-        # self.inset_contnet(2, 'JS built-in funcs' , 'getElementById()', 'this is a description')
-        # self.inset_contnet(3, 'back-end concepts' , 'middleware()', 'this is a description')
-
-        # docs = self.cursor.execute("SELECT * FROM documents").fetchall()
-        # conts = self.cursor.execute("SELECT * FROM contents").fetchall()
-        # print('docs', docs)
-        # print('conts', conts)
+        # self.insert_note(1, 'React Hooks' ,'useEffect()', 'this is a description')
+        # self.insert_note(1, 'NPM Package Manager' ,'npm start', 'this is another description')
+        # self.insert_note(2, 'JS built-in funcs' , 'getElementById()', 'this is a description')
+        # self.insert_note(3, 'back-end concepts' , 'middleware()', 'this is a description')
 
         # fill navBar 
         self.fill_navList()
@@ -195,13 +190,10 @@ class Page_2:
         # selected_frame = Frame(self.contentFrame, width=700, height=450, bg='#fcfcfc')
         # selected_frame.pack(fill='both')
         # selected_frame.pack_propagate(False)
-        
         # scroll = Scrollbar(selected_frame, orient='vertical')
         # scroll.pack(fill='y', side=RIGHT)
 
-        
         selected_frame = ScrollFrame(self.contentFrame)
-
 
         selected_frame_header = Frame(selected_frame.viewPort, width=620, height=37, bg='#f2f2fd',)
         selected_frame_header.pack(pady=10) # place(x=30, y=15)
@@ -219,7 +211,7 @@ class Page_2:
             for content in contents:
                 # Card 
                 card = Frame(selected_frame.viewPort, width=620, height= 150, bd=0, bg='#fdf5f2')
-                card.pack( pady=15) # place(x=30, y=y_diminsion)
+                card.pack(pady=15) # place(x=30, y=y_diminsion)
                 card.pack_propagate(False)
 
                 # Title area
@@ -252,9 +244,6 @@ class Page_2:
     def copyToClip(self, copy):
         command = 'echo ' + copy.strip() + '| clip'
         os.system(command)
-
-    def edit_note(self, note_id):
-        return
 
     def add_content(self):
         title = StringVar()
@@ -290,9 +279,50 @@ class Page_2:
         descEntry = Text(self.note_modal, width=34, bd=0)
         descEntry.place(x=155, y=140, height=100) #+35
 
-        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.inset_note(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
+        submit = Button(self.note_modal, text='Create', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.insert_note(self.current_nav_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
+        submit.place(x=185, y=255, width= 145, height=30)
+    
+    def edit_note(self, note_id):
+        title = StringVar()
+        command = StringVar()
+        desc = StringVar()
+        self.content_old_frame.destroy()
+        self.doc_modal.destroy()
+        self.remove_modal.destroy()
+
+        if self.note_modal: self.note_modal.destroy()
+
+        # Card
+        self.note_modal = Frame(self.contentFrame, width=500, height=300, bg='#f2f2fd')
+        self.note_modal.place(x=100, y=70)
+        self.note_modal.pack_propagate(False)
+        Label(self.note_modal, text='Edit Note', font=(font_family, 11, BOLD), pady=5, bg='#384850', fg='#f8f8f8').pack(fill='x')
+        
+        # Title entry
+        titleLabel = Label(self.note_modal, text='Title',font=(font_family, 10, BOLD), fg='#f8f8f8', bg='#384850', bd=0, padx=34)
+        titleLabel.place(x=58,y=50, height=30) #+35
+        titleEntry = Entry(self.note_modal, width=45, bd=0, textvariable=title)
+        titleEntry.place(x=155, y=50, height=30) #+35
+
+        # Command entry
+        titleLabel = Label(self.note_modal, text='Command',font=(font_family, 10, BOLD), fg='#f8f8f8', bg='#384850', bd=0, padx=15)
+        titleLabel.place(x=58,y=95, height=30) #+35
+        commandEntry = Entry(self.note_modal, width=45, bd=0, textvariable=command)
+        commandEntry.place(x=155, y=95, height=30) #+35
+
+        # Description entry
+        titleLabel = Label(self.note_modal, text='Description',font=(font_family, 10, BOLD), fg='#f8f8f8', bg='#384850', bd=0, padx=13)
+        titleLabel.place(x=57,y=140, height=30) #+35
+        descEntry = Text(self.note_modal, width=34, bd=0)
+        descEntry.place(x=155, y=140, height=100) #+35
+
+        submit = Button(self.note_modal, text='Update', bd=0, font=(font_family, 8, BOLD), padx=5, bg='#384850', fg='#f8f8f8', cursor='hand2', command=lambda:self.update_note(self.current_nav_id, note_id, title.get(), command.get(), descEntry.get("1.0",'end-1c')))
         submit.place(x=185, y=255, width= 145, height=30)
 
+        toBe_update_note = self.cursor.execute("SELECT * FROM contents WHERE id = ?", [note_id]).fetchone()
+        title.set(toBe_update_note[2])
+        command.set(toBe_update_note[3])
+        descEntry.insert(0.0, toBe_update_note[4])
     
     def add_document(self):
         title = StringVar()
@@ -333,9 +363,15 @@ class Page_2:
 
 
     # SQL Query functions
-    def inset_note(self, doc_id, title, command, description):
+    def insert_note(self, doc_id, title, command, description):
         with self.conn:
             self.cursor.execute("INSERT INTO contents (doc_id, title, command, description) VALUES(?,?,?,?)", (doc_id, title, command, description))
+        self.note_modal.destroy()
+        self.fill_contnet(doc_id)
+
+    def update_note(self, doc_id, note_id, title, command, description):
+        with self.conn:
+            self.cursor.execute("UPDATE contents SET title=?, command=?, description=? WHERE id=? ", (title, command, description, note_id))
         self.note_modal.destroy()
         self.fill_contnet(doc_id)
 
@@ -365,8 +401,9 @@ class Page_2:
         self.init_navList()
 
 
-
-
+# **************************************************************************
+# NOTE: this class is copied from [ mp035/tk_scroll_demo.py ] on Github Gist
+# **************************************************************************
 
 class ScrollFrame(Frame):
     def __init__(self, parent):
@@ -423,13 +460,6 @@ class ScrollFrame(Frame):
             self.canvas.unbind_all("<Button-5>")
         else:
             self.canvas.unbind_all("<MouseWheel>")
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     root = Tk()
