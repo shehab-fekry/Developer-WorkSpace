@@ -1,10 +1,13 @@
 from tkinter import *
+from tkinter import filedialog
 from tkinter.font import BOLD
+from pathlib import Path
+from scroll import ScrollFrame
 import sqlite3
 import os
-import platform
 
 font_family = ('Sans-Serif Workhorse')
+directorPath = Path(__file__).parent.absolute()
 
 class App:
     def __init__(self, root=None):
@@ -17,18 +20,19 @@ class App:
         self.page_2 = Page_2(master=self.root, app=self)
         self.frame = Frame(self.root, bg='#fcfcfc')
         self.frame.pack(fill='both', expand=True)
+        
 
         self.label = Label(self.frame, text='Developer WorkSpace', font=(font_family, 30, BOLD), fg="#384850", bg='#f2f2fd', height=2).pack(fill='x')
         
-        self.projImg = PhotoImage(file='Webp.net-resizeimage.png')
+        self.projImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage.png')
         Label(self.frame, width=182, height=170, bg='#f2f2fd', image=self.projImg).place(x=200, y=195)
         self.projectsBtn = Button(self.frame, text='Projects', font=(font_family,12, BOLD), fg="#f8f8f8",bg='#384850', width=18, pady=5, bd=0, cursor='hand2', command=self.make_page_1)
         self.projectsBtn.place(x=200, y=350)
         
-        self.docImg = PhotoImage(file='Webp.net-resizeimage2.png')
+        self.docImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage2.png')
         Label(self.frame, width=182, height=175, bg='#f2f2fd', image=self.docImg).place(x=520, y=195)
         self.workspaceBtn = Button(self.frame, text='Documents', font=(font_family,12, BOLD), fg="#f8f8f8",bg='#384850', width=18, pady=5, bd=0, cursor='hand2', command=self.make_page_2)
-        self.workspaceBtn.place(x=520, y=350)    
+        self.workspaceBtn.place(x=520, y=350)
   
 
     def main_page(self):
@@ -49,7 +53,34 @@ class Page_1:
         self.app = app
         self.frame = Frame(self.master, bg='#fcfcfc')
         Label(self.frame, text='Projects', font=(font_family, 30, BOLD), fg="#384850", bg='#f2f2fd', height=2).pack(fill='x')
-        Button(self.frame, text='🡸 Go Back', command=self.go_back).pack()
+        self.projects_message = Label()
+
+        # database connection
+        self.conn = sqlite3.connect('database.db')
+        self.cursor = self.conn.cursor()
+
+        # buttons header
+        headFrame = Frame(self.frame, width=800, height=40, bg='#fcfcfc')
+        headFrame.pack(pady=15)
+        headFrame.pack_propagate(False)
+        Button(headFrame, text='🡸 Go Back', bg='#384850', fg='#f8f8f8',font=(font_family, 13, BOLD), pady=5, padx=8, bd=0, height=1, cursor='hand2', command=self.go_back).pack(fill=Y, side=LEFT)
+        ask = Button(headFrame, text='➕ New', bg='#384850', fg='#f8f8f8',font=(font_family, 13, BOLD), pady=5, padx=8, bd=0, height=1, cursor='hand2', command=self.openFile)
+        ask.pack(fill=Y, side=LEFT, padx=8)
+
+
+        self.projectsHeader = Frame(self.frame, bg='#0066b8', width=800, height=30)
+        self.projectsHeader.pack()
+        self.projectsHeader.pack_propagate(False)
+        nameLbl = Label(self.projectsHeader, text='Name', bg='#0066b8', fg='#fcfcfc', font=(font_family, 10, BOLD), padx=75).pack(side=LEFT, fill=Y)
+        pathLbl = Label(self.projectsHeader, text='Directory Path', bg='#0066b8', fg='#fcfcfc', font=(font_family, 10, BOLD), padx=160).pack(side=LEFT, fill=Y)
+        pathLbl = Label(self.projectsHeader, text='IDE', bg='#0066b8', fg='#fcfcfc', font=(font_family, 10, BOLD), padx=65).pack(side=LEFT, fill=Y)
+
+        # projects table
+        self.projectsFrame = Frame(self.frame, width=800, height=320, bg='#fcfcfc')
+        self.projectsFrame.pack()
+        self.projectsFrame.pack_propagate(False)
+
+        self.init_projectList()
 
     def start_page(self):
         self.frame.pack(fill='both', expand=True)
@@ -57,6 +88,97 @@ class Page_1:
     def go_back(self):
         self.frame.pack_forget()
         self.app.main_page()
+
+    def openFile(self):
+        folderPath = filedialog.askdirectory()
+        if folderPath:
+            self.insert_project(os.path.basename(folderPath), folderPath)
+            self.init_projectList()
+
+    def init_projectList(self):
+        # clear old projects
+        self.clear_projectList()
+
+        # fetch new projects
+        listOfTables = self.cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='projects'").fetchall()
+        if listOfTables == []:
+            self.cursor.execute("""CREATE TABLE projects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dirName TEXT,
+                dirPath TEXT
+            ) """)
+
+        # fill project list
+        self.fill_projectList()
+
+
+    def clear_projectList(self):
+        for widgets in self.projectsFrame.winfo_children():
+            widgets.destroy()
+
+    def fill_projectList(self):
+        projects = self.cursor.execute("SELECT * FROM projects").fetchall()
+        round = 0
+
+        if projects:
+            self.projects_message.destroy()
+            for project in projects:
+                if round%2 == 0:
+                    row = Frame(self.projectsFrame, height=50, bg='#f2f2fd')
+                    row.pack(fill=X, pady=1)
+                    row.pack_propagate(False)
+
+                    dirName = Label(row, text=project[1], width=25, font=(font_family, 8, BOLD), fg="#384850", bg='#f2f2fd')
+                    dirName.pack(fill=Y, side=LEFT)
+
+                    pathName = Label(row, text=project[2], anchor='w', width=70, font=(font_family, 8), fg="#384850", bg='#f2f2fd')
+                    pathName.pack(fill=Y, side=LEFT)
+
+                    vscodeBtn = Button(row, text='Open In VScode' , fg='#fcfcfc', bg='#0066b8', bd=0, pady=5, padx=5, command= lambda val=project[2]:self.open_vscode(val))
+                    vscodeBtn.pack(side=LEFT, padx=30)
+
+                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#f2f2fd', bd=0, pady=5, padx=5, font=15, command = lambda val=project[0]:self.delete_project(val))
+                    deleteBtn.pack(side=RIGHT, fill=Y)
+                else:
+                    row = Frame(self.projectsFrame, height=50, bg='#fcfcfc')
+                    row.pack(fill=X)
+                    row.pack_propagate(False)
+
+                    dirName = Label(row, text=project[1], font=(font_family, 8, BOLD), width=25, fg='#384850' ,bg='#fcfcfc')
+                    dirName.pack(fill=Y, side=LEFT)
+
+                    pathName = Label(row, text=project[2], anchor='w', font=(font_family, 8), width=70, fg='#384850', bg='#fcfcfc')
+                    pathName.pack(fill=Y, side=LEFT)
+
+                    vscodeBtn = Button(row, text='Open In VScode' , fg='#fcfcfc', bg='#0066b8', bd=0, pady=5, padx=5, command= lambda val=project[2]:self.open_vscode(val))
+                    vscodeBtn.pack(side=LEFT, padx=30)
+
+                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#fcfcfc', bd=0, pady=5, padx=5, font=15, command = lambda val=project[0]:self.delete_project(val))
+                    deleteBtn.pack(side=RIGHT, fill=Y)
+                round+=1
+        else:
+            self.projects_message = Label(self.projectsFrame, text='No Projects Yet..!')
+            self.projects_message.pack(fill='both', expand=TRUE)
+    
+    def open_vscode(self, dirPath):
+        os.chdir(dirPath)
+        os.popen('code .')
+
+
+
+    # Page 1 SQL Query functions
+    def insert_project(self, dirName, dirPath):
+        with self.conn:
+            self.cursor.execute("INSERT INTO projects (dirName, dirPath) VALUES(?,?)", (dirName, dirPath))
+
+    def delete_project(self, project_id):
+        with self.conn:
+            self.cursor.execute("DELETE FROM projects WHERE id = ?", [project_id])
+        self.init_projectList()
+
+
+
+
 
 
 class Page_2:
@@ -82,9 +204,8 @@ class Page_2:
         self.contentFrame = Frame(self.frame, bg='#fcfcfc', width=700, height=450)
         self.contentFrame.place(x=200, y=98) #y=98
         self.contentFrame.pack_propagate(False)
-        
 
-        contentImg = PhotoImage(file='Webp.net-resizeimage3.png')
+        contentImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage3.png')
         empty_img = Label(self.contentFrame, width=150, height=150, bg='#fcfcfc')
         empty_img.image = contentImg  # <== this is were we anchor the img object
         empty_img.configure(image=contentImg)
@@ -129,6 +250,7 @@ class Page_2:
     def init_navList(self):
         # clear old navs
         self.clear_navList()
+        
         # fetch new navs
         listOfTables = self.cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='documents'").fetchall()
         if listOfTables == []:
@@ -206,7 +328,6 @@ class Page_2:
         add_note.pack(fill=Y, side=RIGHT)
 
         if contents:
-            # y_diminsion = 75
             self.selected_nav_noteAlert.destroy()
             for content in contents:
                 # Card 
@@ -228,9 +349,8 @@ class Page_2:
                 
                 # Description area
                 Label(card, text=content[4], width=82, pady=5, height=3, bd=0, bg='#fcfcfc').place(x=20, y=80)
-                # y_diminsion += 180
         else:
-            contentImg = PhotoImage(file='Webp.net-resizeimage3.png')
+            contentImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage3.png')
             self.selected_nav_noteAlert = Label(selected_frame.viewPort, width=150, height=150, bg='#fcfcfc')
             self.selected_nav_noteAlert.image = contentImg  # <== this is were we anchor the img object
             self.selected_nav_noteAlert.configure(image=contentImg)
@@ -362,7 +482,7 @@ class Page_2:
             submit.place(x=120, y=85, width=110)
 
 
-    # SQL Query functions
+    # Page 2 SQL Query functions
     def insert_note(self, doc_id, title, command, description):
         with self.conn:
             self.cursor.execute("INSERT INTO contents (doc_id, title, command, description) VALUES(?,?,?,?)", (doc_id, title, command, description))
@@ -400,66 +520,12 @@ class Page_2:
         self.remove_modal.destroy()
         self.init_navList()
 
+    def insert_project(self, dirName, pathName):
+        with self.conn:
+            self.cursor.execute("INSERT INTO projects (dirName, pathName) VALUES(?,?)", (dirName, pathName))
 
-# **************************************************************************
-# NOTE: this class is copied from [ mp035/tk_scroll_demo.py ] on Github Gist
-# **************************************************************************
 
-class ScrollFrame(Frame):
-    def __init__(self, parent):
-        super().__init__(parent) # create a frame (self)
 
-        self.canvas = Canvas(self, borderwidth=5, background="#fcfcfc")          #place canvas on self
-        self.viewPort = Frame(self.canvas, background="#fcfcfc")                    #place a frame on the canvas, this frame will hold the child widgets 
-        self.vsb = Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
-        self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
-
-        self.vsb.pack(side="right", fill="y")                                       #pack scrollbar to right of self
-        self.canvas.pack(side="left", fill="both", expand=True)                     #pack canvas to left of self and expand to fil
-        self.canvas_window = self.canvas.create_window((4,4), window=self.viewPort, anchor="nw",            #add view port frame to canvas
-                                  tags="self.viewPort")
-
-        self.viewPort.bind("<Configure>", self.onFrameConfigure)                       #bind an event whenever the size of the viewPort frame changes.
-        self.canvas.bind("<Configure>", self.onCanvasConfigure)                       #bind an event whenever the size of the canvas frame changes.
-            
-        self.viewPort.bind('<Enter>', self.onEnter)                                 # bind wheel events when the cursor enters the control
-        self.viewPort.bind('<Leave>', self.onLeave)                                 # unbind wheel events when the cursorl leaves the control
-
-        self.onFrameConfigure(None)                                                 #perform an initial stretch on render, otherwise the scroll region has a tiny border until the first resize
-
-    def onFrameConfigure(self, event):                                              
-        '''Reset the scroll region to encompass the inner frame'''
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))                 #whenever the size of the frame changes, alter the scroll region respectively.
-
-    def onCanvasConfigure(self, event):
-        '''Reset the canvas window to encompass inner frame when required'''
-        canvas_width = event.width
-        self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
-
-    def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
-        if platform.system() == 'Windows':
-            self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
-        elif platform.system() == 'Darwin':
-            self.canvas.yview_scroll(int(-1 * event.delta), "units")
-        else:
-            if event.num == 4:
-                self.canvas.yview_scroll( -1, "units" )
-            elif event.num == 5:
-                self.canvas.yview_scroll( 1, "units" )
-    
-    def onEnter(self, event):                                                       # bind wheel events when the cursor enters the control
-        if platform.system() == 'Linux':
-            self.canvas.bind_all("<Button-4>", self.onMouseWheel)
-            self.canvas.bind_all("<Button-5>", self.onMouseWheel)
-        else:
-            self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
-
-    def onLeave(self, event):                                                       # unbind wheel events when the cursorl leaves the control
-        if platform.system() == 'Linux':
-            self.canvas.unbind_all("<Button-4>")
-            self.canvas.unbind_all("<Button-5>")
-        else:
-            self.canvas.unbind_all("<MouseWheel>")
 
 if __name__ == '__main__':
     root = Tk()
