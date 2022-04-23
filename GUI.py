@@ -24,12 +24,12 @@ class App:
 
         self.label = Label(self.frame, text='Developer WorkSpace', font=(font_family, 30, BOLD), fg="#384850", bg='#f2f2fd', height=2).pack(fill='x')
         
-        self.projImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage.png')
+        self.projImg = PhotoImage(file = str(directorPath) + '\images\Webp.net-resizeimage.png')
         Label(self.frame, width=182, height=170, bg='#f2f2fd', image=self.projImg).place(x=200, y=195)
         self.projectsBtn = Button(self.frame, text='Projects', font=(font_family,12, BOLD), fg="#f8f8f8",bg='#384850', width=18, pady=5, bd=0, cursor='hand2', command=self.make_page_1)
         self.projectsBtn.place(x=200, y=350)
         
-        self.docImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage2.png')
+        self.docImg = PhotoImage(file = str(directorPath) + '\images\Webp.net-resizeimage2.png')
         Label(self.frame, width=182, height=175, bg='#f2f2fd', image=self.docImg).place(x=520, y=195)
         self.workspaceBtn = Button(self.frame, text='Documents', font=(font_family,12, BOLD), fg="#f8f8f8",bg='#384850', width=18, pady=5, bd=0, cursor='hand2', command=self.make_page_2)
         self.workspaceBtn.place(x=520, y=350)
@@ -54,6 +54,7 @@ class Page_1:
         self.frame = Frame(self.master, bg='#fcfcfc')
         Label(self.frame, text='Projects', font=(font_family, 30, BOLD), fg="#384850", bg='#f2f2fd', height=2).pack(fill='x')
         self.projects_message = Label()
+        self.scrollF = Frame()
 
         # database connection
         self.conn = sqlite3.connect('database.db')
@@ -68,7 +69,7 @@ class Page_1:
         ask.pack(fill=Y, side=LEFT, padx=8)
 
 
-        self.projectsHeader = Frame(self.frame, bg='#0066b8', width=800, height=30)
+        self.projectsHeader = Frame(self.frame, bg='#0066b8', width=820, height=30)
         self.projectsHeader.pack()
         self.projectsHeader.pack_propagate(False)
         nameLbl = Label(self.projectsHeader, text='Name', bg='#0066b8', fg='#fcfcfc', font=(font_family, 10, BOLD), padx=75).pack(side=LEFT, fill=Y)
@@ -76,7 +77,7 @@ class Page_1:
         pathLbl = Label(self.projectsHeader, text='IDE', bg='#0066b8', fg='#fcfcfc', font=(font_family, 10, BOLD), padx=65).pack(side=LEFT, fill=Y)
 
         # projects table
-        self.projectsFrame = Frame(self.frame, width=800, height=320, bg='#fcfcfc')
+        self.projectsFrame = Frame(self.frame, width=820, height=320, bg='#fcfcfc')
         self.projectsFrame.pack()
         self.projectsFrame.pack_propagate(False)
 
@@ -120,11 +121,14 @@ class Page_1:
         projects = self.cursor.execute("SELECT * FROM projects").fetchall()
         round = 0
 
+        self.scrollF = ScrollFrame(self.projectsFrame)
+        self.scrollF.pack(fill=BOTH, expand=TRUE)
+
         if projects:
             self.projects_message.destroy()
             for project in projects:
                 if round%2 == 0:
-                    row = Frame(self.projectsFrame, height=50, bg='#f2f2fd')
+                    row = Frame(self.scrollF.viewPort, height=50, bg='#f2f2fd')
                     row.pack(fill=X, pady=1)
                     row.pack_propagate(False)
 
@@ -137,10 +141,10 @@ class Page_1:
                     vscodeBtn = Button(row, text='Open In VScode' , fg='#fcfcfc', bg='#0066b8', bd=0, pady=5, padx=5, command= lambda val=project[2]:self.open_vscode(val))
                     vscodeBtn.pack(side=LEFT, padx=30)
 
-                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#f2f2fd', bd=0, pady=5, padx=5, font=15, command = lambda val=project[0]:self.delete_project(val))
+                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#f2f2fd', bd=0, pady=5, padx=10, font=15, command = lambda val=project[0]:self.delete_project(val))
                     deleteBtn.pack(side=RIGHT, fill=Y)
                 else:
-                    row = Frame(self.projectsFrame, height=50, bg='#fcfcfc')
+                    row = Frame(self.scrollF.viewPort, height=50, bg='#fcfcfc')
                     row.pack(fill=X)
                     row.pack_propagate(False)
 
@@ -153,23 +157,23 @@ class Page_1:
                     vscodeBtn = Button(row, text='Open In VScode' , fg='#fcfcfc', bg='#0066b8', bd=0, pady=5, padx=5, command= lambda val=project[2]:self.open_vscode(val))
                     vscodeBtn.pack(side=LEFT, padx=30)
 
-                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#fcfcfc', bd=0, pady=5, padx=5, font=15, command = lambda val=project[0]:self.delete_project(val))
+                    deleteBtn = Button(row, text='🗙' , fg='#384850', bg='#fcfcfc', bd=0, pady=5, padx=10, font=15, command = lambda val=project[0]:self.delete_project(val))
                     deleteBtn.pack(side=RIGHT, fill=Y)
                 round+=1
         else:
-            # self.projects_message = Label(self.projectsFrame, text='No Projects Yet..!', fg='#0066b8', font=(font_family,15,BOLD))
-            # self.projects_message.pack(fill='both', expand=TRUE)
-            contentImg = PhotoImage(file = str(directorPath) + '\construction2.png')
+            self.scrollF.destroy()
+            contentImg = PhotoImage(file = str(directorPath) + '\images\construction2.png')
             self.projects_message = Label(self.projectsFrame)
             self.projects_message = Label(self.projectsFrame, width=150, height=150, bg='#fcfcfc')
             self.projects_message.image = contentImg  # <== this is were we anchor the img object
             self.projects_message.configure(image=contentImg)
             self.projects_message.pack(pady=70) # place(x=250, y=150)
+            # self.projects_message = Label(self.projectsFrame, text='No Projects Yet..!', fg='#0066b8', font=(font_family,15,BOLD))
+            # self.projects_message.pack(fill='both', expand=TRUE)
     
     def open_vscode(self, dirPath):
         os.chdir(dirPath)
         os.popen('code .')
-
 
 
     # Page 1 SQL Query functions
@@ -211,11 +215,11 @@ class Page_2:
         self.contentFrame.place(x=200, y=98) #y=98
         self.contentFrame.pack_propagate(False)
 
-        contentImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage3.png')
+        contentImg = PhotoImage(file = str(directorPath) + '\images\Webp.net-resizeimage3.png')
         empty_img = Label(self.contentFrame, width=150, height=150, bg='#fcfcfc')
         empty_img.image = contentImg  # <== this is were we anchor the img object
         empty_img.configure(image=contentImg)
-        empty_img.place(x=271, y=149) # place(x=271, y=149)
+        empty_img.place(x=266, y=144) # place(x=271, y=149)
 
         # SideBar frame
         self.sideBarFrame = Frame(self.frame, bg='#f8f8f8', width=200, height=450)
@@ -250,8 +254,6 @@ class Page_2:
         self.remove_modal.destroy()
         self.current_nav_id = 0
         self.app.main_page()
-
-
 
     def init_navList(self):
         # clear old navs
@@ -356,7 +358,7 @@ class Page_2:
                 # Description area
                 Label(card, text=content[4], width=82, pady=5, height=3, bd=0, bg='#fcfcfc').place(x=20, y=80)
         else:
-            contentImg = PhotoImage(file = str(directorPath) + '\Webp.net-resizeimage3.png')
+            contentImg = PhotoImage(file = str(directorPath) + '\images\Webp.net-resizeimage3.png')
             self.selected_nav_noteAlert = Label(selected_frame.viewPort, width=150, height=150, bg='#fcfcfc')
             self.selected_nav_noteAlert.image = contentImg  # <== this is were we anchor the img object
             self.selected_nav_noteAlert.configure(image=contentImg)

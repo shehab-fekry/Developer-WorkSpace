@@ -10,7 +10,7 @@ class ScrollFrame(Frame):
     def __init__(self, parent):
         super().__init__(parent) # create a frame (self)
 
-        self.canvas = Canvas(self, borderwidth=5, background="#fcfcfc")          #place canvas on self
+        self.canvas = Canvas(self, borderwidth=0, background="#fcfcfc")          #place canvas on self
         self.viewPort = Frame(self.canvas, background="#fcfcfc")                    #place a frame on the canvas, this frame will hold the child widgets 
         self.vsb = Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
         self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
