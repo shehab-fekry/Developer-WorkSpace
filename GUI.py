@@ -121,7 +121,7 @@ class Page_1:
         projects = self.cursor.execute("SELECT * FROM projects").fetchall()
         round = 0
 
-        self.scrollF = ScrollFrame(self.projectsFrame)
+        self.scrollF = ScrollFrame(self.projectsFrame, 'fcfcfc')
         self.scrollF.pack(fill=BOTH, expand=TRUE)
 
         if projects:
@@ -162,7 +162,7 @@ class Page_1:
                 round+=1
         else:
             self.scrollF.destroy()
-            contentImg = PhotoImage(file = str(directorPath) + '\images\construction2.png')
+            contentImg = PhotoImage(file = str(directorPath) + '\images\construction.png')
             self.projects_message = Label(self.projectsFrame)
             self.projects_message = Label(self.projectsFrame, width=150, height=150, bg='#fcfcfc')
             self.projects_message.image = contentImg  # <== this is were we anchor the img object
@@ -174,7 +174,6 @@ class Page_1:
     def open_vscode(self, dirPath):
         os.chdir(dirPath)
         os.popen('code .')
-
 
     # Page 1 SQL Query functions
     def insert_project(self, dirName, dirPath):
@@ -219,7 +218,7 @@ class Page_2:
         empty_img = Label(self.contentFrame, width=150, height=150, bg='#fcfcfc')
         empty_img.image = contentImg  # <== this is were we anchor the img object
         empty_img.configure(image=contentImg)
-        empty_img.place(x=266, y=144) # place(x=271, y=149)
+        empty_img.place(x=266, y=150) # place(x=271, y=149)
 
         # SideBar frame
         self.sideBarFrame = Frame(self.frame, bg='#f8f8f8', width=200, height=450)
@@ -238,7 +237,6 @@ class Page_2:
         self.navListFrame = Frame(self.sideBarFrame, bg='#f2f2fd', width=200, height=389, bd=0)
         self.navListFrame.pack(fill='both')
         self.navListFrame.pack_propagate(False)
-        Scrollbar(self.navListFrame, orient='vertical').pack(fill='y', side=RIGHT)
         
         # initialize navList
         self.init_navList()
@@ -294,13 +292,17 @@ class Page_2:
 
     def fill_navList(self):
         documents = self.cursor.execute("SELECT * FROM documents").fetchall()
+
+        scrollNav = ScrollFrame(self.navListFrame, 'f2f2fd')
+        scrollNav.pack(fill=BOTH, expand=TRUE)
+
         if documents:
             for doc in documents:
-                navButton = Button(self.navListFrame, text=doc[1], font=(font_family, 10, BOLD), bd=0, pady=5, bg='#fdf5f2', fg='#e16259', cursor='hand2', command= lambda value=doc[0]:self.fill_contnet(value))
+                navButton = Button(scrollNav.viewPort, text=doc[1], font=(font_family, 10, BOLD), bd=0, pady=5, bg='#fdf5f2', fg='#e16259', cursor='hand2', command= lambda value=doc[0]:self.fill_contnet(value))
                 navButton.pack(fill='x')
         else:
-            notFoundLabel = Label(self.navListFrame, text='No Docs Found', font=(font_family, 10, BOLD), bd=0, pady=200, bg='#fdf5f2', fg='#e16259')
-            notFoundLabel.pack(fill='x')
+            notFoundLabel = Label(scrollNav.viewPort, text='No Docs Found', font=(font_family, 10, BOLD), bd=0, pady=165, bg='#fdf5f2', fg='#e16259')
+            notFoundLabel.pack(fill='both')
     
     def fill_contnet(self, doc_id):
         self.current_nav_id = doc_id
@@ -317,13 +319,7 @@ class Page_2:
             self.toggle_content_frame(selected_nav_content, selected_nav_title)
 
     def toggle_content_frame(self, contents, title):
-        # selected_frame = Frame(self.contentFrame, width=700, height=450, bg='#fcfcfc')
-        # selected_frame.pack(fill='both')
-        # selected_frame.pack_propagate(False)
-        # scroll = Scrollbar(selected_frame, orient='vertical')
-        # scroll.pack(fill='y', side=RIGHT)
-
-        selected_frame = ScrollFrame(self.contentFrame)
+        selected_frame = ScrollFrame(self.contentFrame, 'fcfcfc')
 
         selected_frame_header = Frame(selected_frame.viewPort, width=620, height=37, bg='#f2f2fd',)
         selected_frame_header.pack(pady=10) # place(x=30, y=15)
@@ -362,7 +358,7 @@ class Page_2:
             self.selected_nav_noteAlert = Label(selected_frame.viewPort, width=150, height=150, bg='#fcfcfc')
             self.selected_nav_noteAlert.image = contentImg  # <== this is were we anchor the img object
             self.selected_nav_noteAlert.configure(image=contentImg)
-            self.selected_nav_noteAlert.pack(pady=85) # place(x=250, y=150)
+            self.selected_nav_noteAlert.pack(pady=90) # place(x=250, y=150)
 
         self.content_old_frame = selected_frame
         
@@ -531,9 +527,6 @@ class Page_2:
     def insert_project(self, dirName, pathName):
         with self.conn:
             self.cursor.execute("INSERT INTO projects (dirName, pathName) VALUES(?,?)", (dirName, pathName))
-
-
-
 
 if __name__ == '__main__':
     root = Tk()
