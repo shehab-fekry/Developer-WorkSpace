@@ -157,8 +157,14 @@ class Page_1:
                     deleteBtn.pack(side=RIGHT, fill=Y)
                 round+=1
         else:
-            self.projects_message = Label(self.projectsFrame, text='No Projects Yet..!')
-            self.projects_message.pack(fill='both', expand=TRUE)
+            # self.projects_message = Label(self.projectsFrame, text='No Projects Yet..!', fg='#0066b8', font=(font_family,15,BOLD))
+            # self.projects_message.pack(fill='both', expand=TRUE)
+            contentImg = PhotoImage(file = str(directorPath) + '\construction2.png')
+            self.projects_message = Label(self.projectsFrame)
+            self.projects_message = Label(self.projectsFrame, width=150, height=150, bg='#fcfcfc')
+            self.projects_message.image = contentImg  # <== this is were we anchor the img object
+            self.projects_message.configure(image=contentImg)
+            self.projects_message.pack(pady=70) # place(x=250, y=150)
     
     def open_vscode(self, dirPath):
         os.chdir(dirPath)
