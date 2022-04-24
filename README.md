@@ -14,4 +14,6 @@ A program that gives the developer the ability to document (his/others) knowledg
 
 6) Run GUI.py to launch application.
 
-=============
+=== Folder Structure ===
+1) GUI.py => contains the main function of the app.
+2) scroll.py => an open-source code by (mp035)[https://github.com/mp035] which simply makes frames scrollable.
