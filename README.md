@@ -13,4 +13,5 @@ A program that gives the developer the ability to document (his/others) knowledg
 5) check if other packages are installed.  
 
 6) Run GUI.py to launch application.
-===       ===  
+
+===       ===
