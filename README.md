@@ -16,4 +16,4 @@ A program that gives the developer the ability to document (his/others) knowledg
 
 === Folder Structure ===
 1) GUI.py => contains the main function of the app.
-2) scroll.py => an open-source code by [mp035](https://github.com/mp035) which simply makes frames scrollable.
+2) scroll.py => an open-source code by [mp035](https://gist.github.com/mp035/9f2027c3ef9172264532fcd6262f3b01) which simply makes frames scrollable.
