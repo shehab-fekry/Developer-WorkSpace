@@ -1,7 +1,7 @@
 # Developer-WorkSpace
 <ul>
-  <li>A program that gives the developer the ability to document (his/others) knowledge and important code snippets in easy, readable and organized manner.</li>
-  <li>gather your developed projects in one place </li>
+  <li>A program that gives the developer the ability to document (his/others) knowledge and important <b>code snippets</b> in easy, readable and organized manner.</li>
+  <li>Gather your under-development projects in one place for easy access and control.</li>
 </ul>
 
 <hr>
