@@ -9,7 +9,7 @@
 === Setup ===
 1) Install Python 3.10.0, To run the Python Code useing a compatible Code Editor.
 
-2) SQLite3 module is needed for application to work, No worries about the tables it will be created automatically in file named (databse.db).
+2) SQLite3 module is needed for application to work, No worries about the tables it will be created automatically in file named (database.db).
 
 3) Check if tkinter Python Package is installed. (pip install tkinter)  
 
