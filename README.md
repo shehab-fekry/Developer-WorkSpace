@@ -15,6 +15,7 @@
 
 4) Run GUI.py to launch application.
 
+
 === Folder Structure ===
 1) GUI.py > Contains the app.
 
